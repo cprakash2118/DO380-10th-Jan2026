@@ -1,0 +1,129 @@
+https://github.com/cprakash2118/DO380-10th-Jan2026
+
+Point-01-#
+Product - Red Hat OpenShift 
+
+1-Cloud services editions (Public Cloud)
+ - Red Hat OpenShift Service on AWS       [Platform=AWS;POC=Amazon] - ROSA 
+ - Microsoft Azure Red Hat OpenShift      [Platform=Azure;POC=MS-Azure] - ARO 
+ - Red Hat OpenShift Dedicated            [Platform=AWS/GCP;POC=RedHat]
+ - Red Hat OpenShift on IBM Cloud         [Platform=IBM-Cloud;POC=IBM]
+ 
+2-Self-managed editions
+ - Red Hat OpenShift Kubernetes Engine       [Basic-RHOKE] - basic Enterprise k8s 
+ - Red Hat OpenShift Container Platform      [Standard-RHOCP]
+ - Red Hat OpenShift Platform Plus           [Add-ON Service - RHOPP]
+ - Red Hat OpenShift Virtualization Engine   [Add-ON - Virtualization Based on KubeVirt]
+                                             
+3-Services & add-ons [RHOPP]
+ - Red Hat OpenShift AI
+ - Red Hat OpenShift Lightspeed
+ - Red Hat OpenShift Virtualization
+ - Red Hat Quay
+ - Red Hat Advanced Cluster Management for Kubernetes  
+ - Red Hat Advanced Cluster Security for Kubernetes
+ - Red Hat Advanced Developer Suite
+ - Red Hat OpenShift Consulting
+ 
+DO380 - OpenShift Admin III 
+
+Point-02-#
+Classroom Environment:-
+1-) Users Details:-
+    Login to VMs/Server:-
+	 student/student [student having sudo access]
+	 root/redhat
+	
+	Login to OCP cluster:-
+	 admin/redhatocp [cluster-admin access]
+	 developer/developer [member access]
+	 
+	 kubeadmin/kubeadmin-password  
+	 FYI- kubeadmin -> cluster-admin access (Default).
+	 - From your "workstation" node to "utility" node as root.
+	   $ ssh root@utility
+	   # cd /home/lab/ocp4/auth 
+	   # ls 
+	   kubeconfig kubeadmin-password
+	   # cat kubeconfig | grep server
+        https://api.ocp4.example.com:6443    [API URL - required for CLI/API login]	   
+	   # cat kubeadmin-password ; echo 
+	   ajkdhakjsdhkajs
+	   
+	  Example:-
+	  $ oc login -u admin -p redhatocp https://api.ocp4.example.com:6443 
+	  Concepts behind the API URL:-
+	  https://api.clusterName.baseDomain:6443 
+	  As per DO380 LAB - 
+	  clusterName=ocp4 
+	  baseDomain=example.com 
+	  
+	  Example:-
+	  Cluster-01:-
+	  clusterName=cluster-apac 
+	  baseDomain=citi.com 
+      API URL = https://api.cluster-apac.citi.com:6443 	  
+	  $ oc login -u user -p password https://api.cluster-apac.citi.com:6443 
+	  
+	  Cluster-02
+	  clusterName=cluster-na
+	  baseDomain=citi.com 
+	  API URL = https://api.cluster-na.citi.com:6443 
+	  $ oc login -u user -p password https://api.cluster-na.citi.com:6443 
+	  
+	  
+	  Login to OCP cluster (All required API communication):-
+	  CLI based - Admin via oc 
+	  API Based - Used by developers
+	  Web Based - Use web browser 
+	  
+	  CLI login:-
+	  $ oc login -u admin -p redhatocp https://api.ocp4.example.com:6443 
+	  
+	  Web Console:- 
+	  URL required?
+	  https://appName-namespaceName.apps.clusterName.baseDomain
+	  
+	  https://console-openshift-console.apps.ocp4.example.com 
+
+2-) Domain/Network details:-
+    
+	 Network Name                     Domain Name                          IP Rnage (CIDR)
+	 classroom network                 example.com                       172.25.252.0/24 
+	 Student Network                lab.example.com                      172.25.250.0/24 
+	 cluster Network                ocp4.example.com                     192.168.50.0/24 
+	 
+     Classroom network - For internet access 
+	 student network for internal network access 
+	 cluster network - OCP cluster traffice 
+	 
+
+3) VMs/Server details:-
+    workstation.lab.example.com       Jump server to connect to OCP cluster 
+	bastion.lab.example.com           Act as router to forward the request to internet 
+	classroom.example.com             Proxy to internet
+	utility.ocp4.example.com          [DNS/HAproxy/DHCP/PXE/Apache/etc]
+	cpeh.ocp4.example.com             ODF (Ceph+NooBaa storage)
+	registry.ocp4.example.com         image registry & github repo
+	idm.ocp4.example.com              1st LDAP server - server01 
+	rhds.ocp4.example.com             2nd LDAP server
+    sso.ocp4.example.com              Red Hat Signle Sign On" for OpenID Connect (OIDC)	
+	
+Point-03-# TOC - Table Of Contents - DO380
+Unit-1- Authentication & Authentication (Oauth & it's flow with multiple IdPs)
+        FYI- htpasswd, LDAP, LDAP Group Sync, Client Certificate, OpenID COnnect (OIDC).
+
+Unit-2- Backup, restore & migration using OADP (OpenShift API for Data Protection)
+        FYI- application backup/restore (w.r.t namespace).
+
+Unit-3- MachineConfig (RHEL coreOS - MCO,MCS,MCD,MCC,MC,MCP, other special operator)
+        FYI- No manual changes w.r.t RHEL core OS (RHCOS), all changes via MCO.
+
+Unit-4- Pod Placement (taint-torelation, label-selector, PDB etc).
+
+Unit-5- ArgoCD (deployment and use cases)
+        FYI- Exam - EX380v414 (unit3rd and Unit5th merged - MC via argoCD).
+		
+Unit-6- OpenShift Monitoring [Prometheus, AlterManager, node_exporter].
+
+Unit-7- OpenShift Logging solution (Vector, Loki, ClusterLogging, ClusterLogForwarder - CRs)
