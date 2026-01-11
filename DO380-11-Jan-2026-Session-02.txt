@@ -1,0 +1,96 @@
+Unit-1-#
+- Authentication & Authorization - Customization realted to authentication (htpasswd).
+- LDAP integration 
+- LDAP Group Sync 
+- Client Certificate [Back door entry and audit)
+- Open ID Connect (OIDC)
+
+Lab-01:-
+--------------
+admin/redhatocp -> LDAP account (idm.ocp4.example.com) - cluster-admin account 
+
+user1-5/redhat ; secretName=secret-sre-team ; IdPName=IdP-htpasswd-sre-Team ; sre_grp 
+user6-10/redhat ; secretName=secret-devops-team ; IdPName=IdP-htpasswd-devops-Team ; devops_grp 
+user21-40/redhat ; secretName=secret-app-team ; IdPName=IdP-htpasswd-app-Team ; app_grp
+
+cluster-admin access to sre_grp group 
+self-provisoner access to devops_grp 
+
+Namespace:-
+ns-booking-app [user21-25 -> admin; user26-35 -> edit ; user36-40 -> view]
+
+Case-01:-
+user10/redhat now part of IdPName=IdP-htpasswd-sre-Team
+No more with IdPName=IdP-htpasswd-devops-Team
+
+Case-02:-
+admin/red and it should be a part of sre_grp group and part of this IdP "IdP-htpasswd-sre-Team".
+
+####################################################################
+- 2 LDAP servers w.r.t DO380 LAB.
+
+
+POint-01-# What is LDAP authentication in OpenShift ?
+- Deployed/build new OCP cluster (Default use kubeadmin; initial setup htpasswd)
+- For big env - need to configure LDAP 
+- LDAP integrate openshift as an external authentication provider:-
+  - LDAP (Open LDAP)
+  - RedHat IDM
+  - MicroSoft AD (Active Directory)
+  
+  FYI- OpenShift (Oauth) authenticate users and fetch their attributes from LDAP.
+  
+
+
+POint-02-# LDAP Service Basic.
+ - LDAP server stores some attributes(informations):-
+   - users 
+   - Groups
+   - Organizational Units (OU)
+   - Attributes (uid,cn,mail etc).
+   
+   When OpenShift connetc to LDAP server via Oauth server, which perform:
+   1- Bind -> Connect to LDAP using admin DN.
+   2- search -> Find the users/groups 
+   3- Return attributes -> uid,cn,email, etc 
+   
+ POint-03-# LDAP URI sysntax:-
+ 
+ ldaps://hostname:port/basedn?attributes?scope?filter 
+ host:port    -> LDAP server         -> Example:-   idm.ocp4.example.com:389
+ basedn       -> Search start point  -> Example:-   cn=administrator,dc=ocp4,dc=example,dc=com 
+ attribute    -> Attribute to return -> Example:-   Users, email 
+ scope        -> How deep to search  -> Example:-   sub
+ filter       -> Search condition    -> Example:-   uid=john 
+
+
+Final LDAP URL:-
+ ldaps://ldap.exampl.example.com/cn=administrator,dc=ocp4,dc=example,dc=com?user?sub?uid
+ 
+
+
+1st LDAP - idm.ocp4.example.com 
+2nd LDAP - rhds.ocp4.example.com 
+  ldap://ldap-server -> 389n
+  ldaps://ldap-server 
+  
+  
+  
+  
+  
+
+
+LDAP integration.
+Case-03:-
+ Remove all current setup 
+ Two LDAP server:-
+ idm.ocp4.example.com 
+ 
+Case-04:-
+  LDAP server = rhds.ocp4.example.com 
+
+Case-05:-
+LDAP Group Sync   
+ 
+ 
+ 
