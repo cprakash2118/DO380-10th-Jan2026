@@ -1,0 +1,34 @@
+#Unit-1-# Authentication and Identity Management
+- Authentication methods [htpasswd with custom changes]
+- IdP = LDAP integration [idm.ocp4.example.com/rhds.ocp4.example.com]
+- LDAP Group Sync 
+- Client Certificate (BackDoor entry for cluster-admin; Audit level ops]
+- Open ID Connect (OIDC) -As RHSSO (RedHat Single Sign On ) [sso.ocp4.example.com].
+  LDAP vs OIDC (As RHSSO).
+
+LAB-01:-
+admin/redhatocp - cluster-admin (LDAP user)
+developer/developer - Basic LDAP user.
+kubeadmin/kubeadmin-password-file [on "utility" node ; /home/lab/ocp4/auth]
+
+Task-01 - Based on Users (IdP=htpasswd)
+- user1-5/redhat  ; secretName=secret-sre-team ; IdP Name= IdP-htpasswd-sre-team 
+- user6-10/redhat  ; secretName=secret-devops-team ; IdP Name= IdP-htpasswd-devops-team 
+- user11-30/redhat  ; secretName=secret-app-team ; IdP Name= IdP-htpasswd-app-team 
+
+Task-02 - Based on Groups 
+- user1-5 , Group=sre_grp 
+- user6-10 , Group=devops_grp 
+
+Task-03 - Based on RBAC.
+- sre_grp -> cluster-admin access 
+
+
+Case-01:-
+- Authenticate with all users and review.
+- Delete user10 from devops-team (w.r.t secret) and move to sre-team (w.r.t secret), and review the authentication.
+- add new user "admin/red" to sre-team(w.r.t secret) 
+
+  Note:- One User can be part of multiple IdP.
+    admin user - LDAP IdP(admin/redhatocp)
+	admin user - SRE IdP (admin/red)
