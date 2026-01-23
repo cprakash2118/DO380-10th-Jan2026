@@ -1,0 +1,106 @@
+-Quick Recap - (5 mins):-
+#Unit-1-) Authentication & Authorization:-
+- Token Based Authentication [via IdP - htpasswd, LDAP, LDAP Group Sync, Open ID COnnect -RHSSO]
+- Certiticate Based Authentication [Via client certificate] - Bypass "Oauth" not via IdP.
+- Identity Broker [ From OpenShift behalf Oauth sync with all other IdPs]
+
+
+ 1st LDAP - idm.ocp4.example.com 
+ 2nd LDAP - rhds.ocp4.example.com 
+ 
+ API URL - https://api.clusterName.baseDomain:6443 
+         - https://api.ocp4.example.com:6443 
+ 
+ 
+ Web URL - https://appName-namespaceName.apps.clusterName.baseDomain
+           https://console-openshift-console.apps.ocp4.example.com 
+		   
+
+ DNS (Domain) 
+  - idm.ocp4.example.com 
+  - rhds.ocp4.example.com 
+  
+  w.r.t idm.ocp4.example.com
+  
+ldapsearch -D "cn=Directory Manager" -w redhatocp -p 389 -h idm.ocp4.example.com -b "dc=ocp4,dc=example,dc=com"
+  
+1-BindDN- uid=admin,cn=users,cn=accounts,dc=ocp4,dc=example,dc=com 
+  
+2-LDAP URL 
+  - ldaps://idm.ocp4.example.com/cn=users,cn=accounts,dc=ocp4,dc=example,dc=com
+  - ldaps://idm.ocp4.example.com/cn=accounts,dc=ocp4,dc=example,dc=com
+  - ldaps://idm.ocp4.example.com/dc=ocp4,dc=example,dc=com
+  
+3-LDAP secret 
+  bindPassword=redhatocp  (Create Secret)
+  
+4-LDAP certificate.
+  configMap - Hold LDAP certificate (LDAP's team will provide this certificate).
+  
+- LDAP integration.
+  Bind DN - uid,
+  LDAP URL - 
+  LDAP Secret (Admin's password) - 
+  LDAP Certificate (Encrypted communication) - 
+
+####  
+LDAP Group Synchronization:-
+#### OpenShift can connect to an external LDAP directory server (MIcrosoft AD, Open LDAP, RedHat IDM etc) to automatically import and keep users/groups memberships synchronized.
+
+#### Why LDAP group sync needed ?
+  - When Org already manages groups in LDAP/AD, We don't want to recreate and manage locally in OpenShift.
+  - Synchronization ensures that RBAC group memberships in OpenShift reflect same as LDAP/AD.
+  
+##### HOw it workds (Backend):-
+Step-1-) LDAP server - Maintains users, groups and relationships (Who belongs to which group).
+
+Step-2-) OpenShift OAuth IdP - Handles users authentication against LDAP/AD.
+
+Step-3-) Group Sync COntroller - Connect to LDAP server, reads groups and updates OpenShift's internal Group
+object accordingly.
+
+Step-4-) Automation (via cronjobs) - Keeps synchronization recurring so OpenShift group always stay up to date.
+
+
+#### Required COmponents - TO enable synchronization, OpenShift needs:-
+- Configuration file (Telling it how to connect to LDAP - [CR - LDAPSyncConfig]
+- Service Account with permission to perform the sync.
+- Cluster role + Role binding - SO the serviceAccount can create/update groups.
+- ConfigMap and Secret to store connection info securely (Like password and certificate)
+- Conrjobs to schedule recurring sync.
+
+LDAP:-
+LDAP URL 
+  - ldap://idm.ocp4.example.com:389  
+  - ldaps://idm.ocp4.example.com:389   
+BindDN and Password - Admin credentials LDAP use to run queries 
+CA Certificate - USed if TLS is enabled 
+
+#### Group and lookup rules.
+- It help you to describe how to locate groups in LDAP.
+  - groupUIDAttribute: Unique ID of the group (Like dn)
+  - groupNameAttribute: Field used as OpenShift group name (cn)
+  - groupMembershipAttribute: This field lists the members (member).
+  
+#### Define user lookup rules:-
+ How to locate the user.
+ BaseDN - Eg:- ou=users,dc=ocp4,dc=example,dc=com
+ Filter - objectClass=preson 
+  - userUIDAttribute: Unique ID of the user (Like dn)
+  - userNameAttribute: Field used as OpenShift user name (cn)
+ 
+ 
+#### Run a one-time synchronization.
+oc adm groups sync --sync-config=config.yaml --confirm 
+
+--- Cron part will discuss later.
+ 
+##########################
+Task-01- Local user with cluster-admin access (Incase if LDAP not working then this will be used)
+htpasswd - sre-team 
+
+Task-02 LDAP integration:-
+  - idm.ocp4.example.com 
+  - rhds.ocp4.example.com 
+
+Task-03- LDAP Group Sync.
