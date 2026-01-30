@@ -1,0 +1,101 @@
+Quick Recap (5 mins):-
+Unit-1-# Authentication and Identity Management:-
+  - Authentication - OAuth (Token Based), Client Certificate (Certificate based).
+  - TOken Based Authentication via Identity Providers (IdP=htpasswd,LDAP,OIDC-RHSSO,PingIdentity etc).
+  - htpasswd (multiple authentication and "mapping Method"
+  - LDAP intergration [idm.ocp4.example.com & rhds.ocp4.example.com]
+  - LDAP Groups Sync 
+  - LDAP Groups Sync - Automation via Cronjobs 
+  - Client Certificate (Backdoor cluster-admin/auditor access).
+- Open ID COnnect (OIDC-RHSSO).
+  sso.ocp4.example.com [Red Hat Single Sign on server - Admiministration]
+
+***************
+# Open ID Connect (OIDC-RHSSO):-
+
+POint-01:-
+- What is OIDC ?
+  - RedHat SSO as an OICD identity provider for OpenShift.
+  - OpenID Connect (OIDC) = identity layer built on top of Oauth2.x.
+  - A user authentication to IdP (RHSSO, PingIdentity, KeyClock, Google etc)
+    FYI- As per DO380 lab - RHSSO as IdP.	
+  - IdP (OIDC-RHSSO) issue a JWT token, which describing who the user is ?
+  - Application (Like OpenShift) verify and trust that token instead of asking for password.
+
+  - How OIDC and OpenShift workflow.
+    Note: Make OpenShift automatically as below:-
+	1- Create user based on information in the OIDC token.
+	2- Create Groups (grp1,grp2) and put users into them (Based on their relationship).
+	3- use those groups for RBAC (edit,view, admin, cluster-admin etc).
+
+  FYI- instead of OpenShift keeping user/groups accounts, it asks Red Hat SSO -> "Who is this person? and SSO answers with singed token".
+  
+
+POint-02-# JWT structure:-
+JWT has three parts:-
+ header.payload.signature 
+ 
+ 1- Header:-
+  - Token type and signing algorithm.
+    FYI- It will carry the info about - Which type token, which algorithm used for this token.
+	Example:-
+	 {"alg": "RS256", "typ": "JWT"}
+	 
+ 2- Payload (COnsider like - claims):-
+    - Key/value information about the users. 
+	Example:-
+	{
+	 "sub": "a123-uuid",
+	 "preferred_name": "john",
+	 "email": "john@example.com",
+	 "name": "John xyz",
+	 "groups": ["sre-grp", "sre-grp-na"]
+	 }
+  
+  3- Signature:-
+     - Crytographic signature using IdP's private key.
+	 - OpenShift uses IdP's public key/CA to verify its wasn't tampered with.
+
+POint-03-# OIDC in OpenShift (How the login flow works).
+Statement:- OpenShift has a built-in OAuth server. It does not talk to password directly when you use OIDC. Instead it works like this.
+
+Step-01-) User opens OpenShift COnsole.
+https://console-openshift-console.apps.ocp4.example.com 
+
+Step-02-) User select the OIDC provider (Eg: IdP-RHSSO-SRE).
+
+Step-03-) OpenShift redirect the browser to RedHat SSO's login page.
+
+Step-04-) User logs in with username/password on RedHat SSO.
+
+Step-05-) SSO authenticates and sends back:-
+          - An ID token (JWT) with user identity and Group claims.
+		  - Other OAuth token.
+
+Step-06-) OpenShift:-
+          - Verifes the token signature qnd issuer (Using CA and issues URL in the OAuth CR).
+		  - Reads the configured claims.
+		  - Create or update the user and Group objetc 
+		  - Logs the user into OpenSHift with the group membership.
+		  
+    NOte: So Red Hat SSO is the "source of trust" for identity and group membership.
+
+
+POint-04-# OIDC Claims & Group Claims:-
+- Standard claims:-
+  - sub - Unique Subject ID (remote identifier).
+  - preferred_name - username you want to show/use as OpenShift user name.
+  - email - User's email.
+  - name - Display name 
+
+- Group claims:-
+  - Create corresponding group object if do not exist.
+  - Adds the users to those groups on login.
+  - RBAC implemented.
+
+POint-05-# 
+- sso.ocp4.example.com 
+  https://sso.ocp4.example.com:8080
+  admin/redhatocp
+
+  
