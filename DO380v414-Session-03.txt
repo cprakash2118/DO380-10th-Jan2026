@@ -1,0 +1,93 @@
+#Quick Recap:-
+- Product [Red Hat OpenShift]
+- Classroom environment (DO380v414)
+- Login to OCP cluster [3 master; 3 worker nodes]
+  - admin/redhatocp      [cluster-admin access - LDAP account - idm.ocp4.example.com]
+  - developer/developer  [Basic member access - LDAP account  - idm.ocp4.example.com]
+  
+  - kubeadmin/kubeadmin-password [Location:- utility node at /home/lab/ocp4/auth]
+  - Login part:-
+    $ oc login -u admin -p redhatocp https://api.ocp4.example.com:6443 
+	$ oc login --token=aldjkasjdlaskjda https://api.ocp4.example.com:6443    - Impt 
+	API URL 
+	Wen Console 
+	
+Two methods we have to login to OCP cluster:-
+- Token based authentication (Via Oauth) [Oauth is builtin service w.r.t OpenShift - Identity Broker]
+- Certificate based authentication (via Client Certificate).
+
+FYI- Certificate based authentication:-
+   - required client certificate:-
+	  1st way:- 
+	   $ oc get nodes --kubeconfig /path/to/kubeconfig/file 
+	   $ oc whoami -t --kubeadmin/kubeadmin-password
+	   no token is currently in use for this session
+       $ oc logout --kubeadmin/kubeadmin-password
+	   Token needed in case of logout 
+	   
+	   2nd way:-
+	   $ env | grep KUBECONFIG 
+	   $ export KUBECONFIG=/path/to/kubeconfig/file
+	   $ env | grep KUBECONFIG
+	   KUBECONFIG=/path/to/kubeconfig/file
+	   $ oc whoami 
+	   system:admin 
+	   $ oc get nodes 
+	   $ oc whoami -t 
+	   
+	   3rd way:-
+	   $ cp -rpv kubeconfig ~/.kube/config 
+
+FYI- Token based authentication:- 
+   $ oc login -u user -p password https://api.ocp4.example.com:6443 
+   $ oc login -u user https://api.ocp4.example.com:6443
+     password:
+
+   $ oc login https://api.ocp4.example.com:6443
+     user:    
+	 password:
+
+   $ oc whoami 
+    admin 
+   $ oc whoami -t 
+   alksdjakljdlkasjdlak
+   $ oc login --token=laksjdlkasjdlkas https://api.ocp4.example.com:6443 
+
+============================
+- Oauth Part (Identity Broker).
+- IdPs:-
+   htpasswd (Multiple options for understanding)
+   LDAP 
+   LDAP Group Sync 
+   Cleint Certificate 
+   OIDC 
+
+Task-01:-
+ user1-5/redhat   secret=secret-sre-team IdP=IdP-htpasswd-sre-team
+ user6-10/redhat   secret=secret-devops-team IdP=IdP-htpasswd-devops-team
+ user11-30/redhat   secret=secret-myapp-team IdP=IdP-htpasswd-myapp-team
+
+ Verify the authentication:-
+
+- Modify secret (secret-sre-team) and add admin/red [FYI- Admin User already logged in via LDAP IDP]
+- user9/redhat now part of IdP-htpasswd-sre-team
+ 
+ Now again modify the authentication.
+ 
+Note: Remove all previous LDAP and login via kubeadmin account.
+NOte: Provide cluster admin access to sre_grp (user1-5 belongs to this group).
+
+
+Task-02:-
+ Integrate LDAP (idm.ocp4.example.com):-
+  admin;developer -> secretName=secret-ldap-idm ; IdP=IdP-LDAP-IDM 
+  
+ Integrate LDAP (rhds.ocp4.example.com):-
+  someuser -> secretName=secret-ldap-rhds ; IdP=IdP-LDAP-RHDS 
+  
+  
+  Oauth (oc get ouath/cluster) -> oc get pods -n openshift-authentication-operator 
+  
+ 
+   
+   

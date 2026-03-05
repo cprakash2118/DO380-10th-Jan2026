@@ -1,0 +1,57 @@
+#OIDC Authentication & Group Claims:-
+RHSSO (sso.ocp4.example.com)
+- Integrate Red Hat Single Sign-On (RHSSO/Keyclock) with OpenShift using OIDC.
+- Sync user + groups 
+- Authentication via RHSSO 
+- Authorization (RBAC) via OpenShift sync group.
+
+# Components involved:-
+- Red Hat Single Sign-On (RHSSO):-
+  - Acts as OIDC Indentity Provider (IdP)
+  - Stores:-
+    - Users
+    - Groups 
+  - Issues:-
+    - ID Token
+    - Access Token 
+    - Group Claim 
+
+- OpenShift Oauth:-
+  - Acts as OIDC client
+  - Delegates authenication to RHSSO.
+  - Creats:-
+    - OpenShift users.
+	- OpenShift Groups.
+  - Enforces RBAC
+
+- external_provides Realm
+  - Logical isolation inside RHSSO 
+  - Dedicated realms for OpenShift integration 
+
+Realm is a security and identity boundary that contains it's own users,groups,client,roles \
+and authenication rules.
+
+==========
+Unit-1-# Authentication & Authorization (w.r.t multiple IdPs):-
+- Authentication - Oauth/Client Certificate.
+- htpasswd (mappingMethod)
+- LDAP integration [IDM & RHDS]
+- LDAP groups sync (with automated way using cronjobs).
+- Client Certificate [Back door entry for cluster-admin and auditor part)
+- OpenIDConnect (RHSSO)
+
+Exam:-
+- LDAP integration
+- Client Certificate
+
+Unit-2-# Backup, Restore, and Migration of Applications with OADP (End user application not for control plane):-
+- Export and Import Application Data and Settings:-
+  - K8s resources [POD,SVC,RS,Deploy,StatefulSet,route,PVC,SC]
+  - Images (w.r.t internal registry)
+  
+  Container -> images -> registry
+  Container -> Storage -> PV/PVC -> SC -> ActualStorage [RBD,CephFS,RGW->MCG = ODF -> Ceph + NooBaa storage)
+  
+  
+oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type merge
+  

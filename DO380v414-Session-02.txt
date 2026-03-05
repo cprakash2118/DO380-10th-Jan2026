@@ -1,0 +1,110 @@
+#-Quick Recap:-
+- Product (Red Hat OpenShift - RHOKE/RHOCP/RHOPP/RHOV)
+- TOC w.r.t DO380v414 
+- Classroom Envrionment:-
+  1-) User Details:-
+     Login to VMs/Servers:-
+	  - student/student [sudo access]
+	  - root/redhat 
+	  
+	 Login to OCP cluster:-
+	  - admin/redhatocp [LDAP account - idm.ocp4.example.com]
+	  - developer/developer [LDAP account - idm.ocp4.example.com]
+	  
+	  - kubeadmin/kubeadmin-password 
+	  [on "utility" node - location=/home/lab/ocp4/auth/{kubeconfig,kubeadmin-password}
+	  
+	  -----------------
+	  $ ssh root@utility 
+	  # cd /home/lab/ocp4/auth/
+	  # cat kubeconfig | grep server 
+	    https://api.ocp4.example.com:6443 
+	  # cat kubeadmin-password ; echo  
+	  ajskdhaskjdhkjashdkjash
+	  
+	  FYI- These two file [kubeconfig, kubeadmin-password] created at the time of OCP deployment.
+	  
+	  
+  2-) Domain/Network Details:-
+         Network Name            Domain Name                  IP Range 
+     - Student Network         lab.example.com             172.25.250.0/24 
+	 - Cluster network         ocp4.example.com            192.168.50.0/24 [Default CNI- OVNKubernetes]
+	   Additional Network      xyz.example.com             192.168.51.0/24 [Multus CNI]
+	   
+	  Accenture [Citi project ]
+	  Accenture - gateway towards citi infra [OCP cluster - citi infra]
+	  
+      API URL = https://api.CLusterName.baseDomain:6443  
+	  Web Console = https://appName-nsName.apps.CLusterName.baseDomain
+	  
+	  Base Domain - citi.com 
+	  OCP clusters - cluster-apac
+	  API URL = https://api.cluster-apac.citi.com:6443 
+	  Web Console = https://console-openshift-console.apps.cluster-apac.citi.com
+	  
+	  
+	  Base Domain - citi.com 
+	  OCP clusters - cluster-na 
+	  API URL = https://api.cluster-na.citi.com:6443
+	  Web Console = https://console-openshift-console.apps.cluster-na.citi.com
+	  
+	  Base Domain - citi.com 
+	  OCP clusters - cluster-emea 
+	  API URL = https://api.cluster-emea.citi.com:6443
+	  Web Console = https://console-openshift-console.apps.cluster-emea.citi.com
+	  
+	  
+  3-) Servers/VMs:-
+      - workstation.lab.example.com   [Jump server - oc/helm/kustomize et]
+      - bastion.lab.example.com       [Connect Student/cluster network to classroom network]
+      - classroom.example.com         [It allow you to connect internet]
+                                      github.com; quay.io ; registry.redhat.io etc 
+  	  - utility.lab.example. com     [HAproxy,DNS,DHCP,PXE,APache,NFS-StorageClass etc - This node build OCP cluster]
+	  - ceph.ocp4.example.com         ODF (OpenShift Data Foundation -> Ceph + NooBaa = ODF (Storage Solution).
+	    Note: DO380 is external ODF; DO370 is a internal ODF.
+	
+	  - registry.ocp4.example.com      Registry/CodeRepo/Helm 
+	    git.ocp4.example.com 
+		helm.ocp4.example.com    
+	  
+	  - idm.ocp4.example.com     [LDAP - admin/redhatocp ]
+	  - rhds.ocp4.example.com    [LDAP - users ]   
+	  - sso.ocp4.example.com     Red Hat Single SignOn server [OpenIDConnect - OIDC]
+	  
+		LDAP URL 
+		BindDN 
+		BaseDN 
+		ldapsearch & output discussion.
+		
+	  - master01-03.ocp4.example.com    [Only master role]
+	  - worker01-03.cop4.example.com    [ONly worker role]
+	  
+==================================
+Task-01:-
+IdP=htpasswd [Mapping Method]
+  user1-5   IdP=htpasswd-sre-team ; admin/red 
+  user6-10  IdP=htpasswd-devops-team 
+  user11-20 IdP=htpasswd-myapp-team  
+  
+  Note: Create admin account [admin/red] for htpasswd 
+  FYI- One user part of multiple IdP ?
+  
+
+IdP=LDAP-idm
+  LDAP Server = idm.ocp4.example.com 
+   LDAP account-
+   admin/redhatocp 
+  
+IdP=LDAP-rhds 
+  LDAP Server = rhds.ocp4.example.com 
+  
+
+Task-02:- 
+LDAP Group Sync (Auto sync via Cronjobs)
+
+Task-03:-
+OpenIDConnect - RHSSO 
+
+Task-04:- 
+Client-certificate
+Create "kubeconfig" file for backdoor entry (cluster-admin/cluster-reader).

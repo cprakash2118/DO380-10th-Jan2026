@@ -1,0 +1,139 @@
+#Unit-2-# Backup, Restore, and Migration of Applications with OADP.
+KubeVirt (DO316/336), DO370 (ODF):-
+
+- Export and Import Application Data and Settings.
+- OADP Operator Deployment and Features.
+- Backup and Restore with OADP.
+
+
+#############
+POint-01#
+- Why Export/Import/Backup is needed.
+  Kubernetes/OpenShift - application is not a single thing.
+  
+  It consists of:-
+  1- Application resources (k8s/ocp) - Deployment, service, route, configMap, secret, StatefulSet.
+  2- Container images (image stored in registries).
+  3- Application Data (PVC/OBC)
+   
+   Backup=All three together
+   
+****************
+    Stoarge Block/file - CSI (PVC) -> PV -> SC(ODF - RBD/CephFS) -> ActualStaorage 
+  Stoarge Object     - S3API (OBC) -> OB -> SC (RGW/MCG) -> ActualStaorage.
+  
+  ODF - Ceph + NooBaa 
+  Ceph - Block/file/Object STorage.
+         Block- RBD    (RBD CSI plugins used PVC)
+		 File - CephFS (CepFS CSI plugins used PVC)
+		 Object - RGW  (RGW use only S3 API -> OBC).		 
+  NooBaa - Object - MCG (It can connect to any S3 stoarge providers - AWS,Azure,GCS, etc). 
+****************
+
+1- DR - Disaster Recovery.
+2- Migration (Cluste1 -> cluster2 ; project1 -> project2)
+3- Environment duplication (Dev -> test -> Stage -> Prod).
+4- Rollback to last working state.
+
+
+#############
+POint-02#
+ What exactly needs to be backed up?
+ - Resource layer 
+ - Image layer 
+ - Data layer 
+ 
+Step-01:- Identify required application resources:-
+  Deployed applications:-
+  via POD 
+  via ReplicaSet 
+  via Deployment     (This)
+  via StatefulSet    (This)
+  via DaemonSet 
+  via DeploymentConfig 
+  via replicationController
+  
+  Deployment, Service, ConfigMap, Secret, PVC, Route, NetworkPOlicy, LimitRange, ResourcQuota, namespace.
+  
+Step-02:- Export Application Resource (YAML files):-
+   $ oc get deployment/mysql -n prod-booking-db -o yaml > backup_deployment-prod-booking-db-mysql.yaml 
+   
+   This YAML contains:-
+    - Metadata 
+	- Spec (Important)
+	- Status (Runtime data - Not resuable)
+	
+	apiVersion:
+	kind:
+	metadata:
+    spec:
+    status: 
+
+Step-03:- CLean the YAML before Import:-
+  These fields must be removed:-
+   - metadata.namespace
+   - metadata.creation.Timestamp 
+   - metadata.resourceVersion 
+   - metadata.uid 
+   - status 
+
+  Why?
+  These are cluster-specific runtime fields.
+
+
+Step-04:- Import Application Resources:-
+ - Create resources in new project:-
+  $ oc create -f clean_backup_deployment.yaml -n prod-backup 
+
+ - Common failure example (Service):-
+   - Problem Statement:- "failed to allocate IP - already allocated"
+   - Reason:- spec.clusterIP is immutable 
+   - Fix:- 
+     $ yq d - metadata.namespace | yq d - spec.clusterIP 
+	 $ oc create -f clean-service.yaml -n prod-backup
+	 
+	 Serice     - remove (spec.clusterIP)
+	 Route      - remove spec.host
+	 Deployment - Mostly metadata/status cleanup
+     Secret     - Usally ok
+
+
+
+#############
+POint-03#	
+- Even if YAML exists, POD will not start if images are missing.
+  IMage Options:-
+  1- INternal OpenShift registry
+  2- External registries (Quay, Docker HUb etc).
+
+- Expose OpenShift internal Registry:-
+  oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type merge  
+
+ $ oc get route -n openshift-image-registry 
+   deafult-route-openshift-image-registry.apps.ClusterName-baseDoamin. 
+   deafult-route-openshift-image-registry.apps.ocp4.example.com 
+
+- Login to registry 
+- Export container images from the cluster 
+  using "skopeo" (Higly recommended).
+   $ skopeo copy docker://resgirt/project/image:tag docker://remote-registry.example.com/image:tag 
+   
+  Using "oc image mirror":-
+   oc image mirror registry/project/image:* remote-registry.example.com/image 
+   
+#############
+POint-04#
+ - Inconsistent Backup:-
+   - App Runing 
+   - Data changes duing backup 
+   
+- COlume Snapshot (CSI-Based):-
+  $ oc get volumensnapshot
+  
+  App must be 
+   - Stopped 
+   - Scaled donw 
+   
+
+ Deployment  -> PVC (Scale to 2 ) [2 POD -> 1 PVC)
+ StatefulSet -> PVC (Scale to 2) [2 POD -> 2 PVC)

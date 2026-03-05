@@ -1,0 +1,59 @@
+#OADP Operator:-
+- What is OADP?
+  OpenShift API for Data Production (OADP) is RH's native backup and restore framework for OpenShift workload.
+
+- What does OADP protect?
+  - OADP backs/restore up:-
+    - Kubernetes resources [PODs,Deployment,Service, Route and other CRs).
+	- Persistent Volume (via snapshots or file-system backup)
+	- OpenShift internal container image (via OpenShift plugin).
+	- OpenShift Virtulization resources (via KubeVIrt plugins) [K8s/OCP resources, internal images, PVC- data]
+
+- Core Architecture (Velero-centric Design).
+  Central Component: Velero
+  - ACt as backup/restore API server.
+  - It Orchestrates backups using Plug-ins 
+  - Comunications with Kubernetes API, CSI drivers, and object storage.
+  
+- Supporting Components:-
+  - Component 
+    ->  Velero -> Backup and Restore engine.
+    ->  CSI plug-in -> Volume snapshots
+    ->  Data Mover -> MOves snapshots to object storage 
+    ->  Kopia  -> Upload and encrypt volume data.
+    -> Node agent -> Access node-mounted volumes.
+    -> Cloud/Oject plugins -> AWS,Azure, GCP and ODF  etc.
+
+- Kubernetes Resource Backup:-
+  What happens during resources backup?
+  Velero (It's a POD - openshift-storage).
+  1- Export Kubernets Objects (Deployment, secret.yaml , configmap.yaml )
+  2- Applies filters (namespace, labels, resource etc ).
+  3- Determines correct restore order 
+  4- Modify cluster-specfic field.
+  
+- VOlume Backup:-
+  - CSI snapshots backup (Recomm/Prefered):-
+    Fast 
+	Storage-native 
+	Minimal application impact.
+	
+- File System Backup:-
+    When this is used ?
+	When storage does NOT support snapshots
+	- NFS 
+	- Local Stoarge 
+	
+   How it works:-
+    NOde agent mounts volume 
+	Kopia read file-system
+	Data uploadded to object support.
+	
+- Application-consistent backup 
+  snapshots are crash-consitent, not application-consistent.
+  
+   OADP <  v1.3 -> Restic 
+   OADP >= v1.3 -> Kopia (Default).
+   Data Mover required Kopia.   
+   
+   

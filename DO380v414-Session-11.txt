@@ -1,0 +1,90 @@
+Unit-3-Part-03-# Node Configuration with Special Purpose Operators.
+- What is "Special Purpose Operators" ?
+  - Goal:-
+    Apply OS-level/node-level settings/changes to OpenSHift nodes using higher-level Operators, 
+    instead of only using the Machine Configuration Operators (MCO).
+  - Why higher-level Operators?
+    MCO is great for many baseline OS configurations, but some workload needs specialized tuning 
+	that is better handled by dedicated operator.
+	
+- MCO vs Special Purpose Operators
+  1-) MCO is best for:-
+      baseline OS configurations across a group of nodes:-
+	  - kernel args/ sysctl baseline (common values).
+	  - files, systemd unitts, basic OS configurations.
+	  - node reboots and safe rollout via MCP.
+	Example:-
+	  - You want to ensure all worker nodes have a standard sysctl baseline for networking/database etc.
+	  - MCO is a good fir basecause it's Uniform OS policy'.
+	  
+  2-) Special Purpose Operator are best for:-
+      Advanc, workload-aware,hardware-aware and operationaally dynamic tuning such as:-
+      - Performance tuning profile (Latency vs Throughput)
+      - Hardware discovery and labeling (GPU,SR_IOV, NIC, CPU features etc).
+      - Kernel modules lifecycle management (Build/deploy).
+    Example:-
+      - Only a subset of nodes run "OpenSHift Virtulization" workload (VMs - Based on KubeVirt) and need CPU  
+        isolation + real-time tuning.
+ 
+       VMs (Hypervisor - Example:- ESXi, KVM, HyperV etc) 
+	   FYI- [Libvirt + QEMU/KVM + VMs] -> Host (Called Hypervisor)
+	   
+       VMs (Cloud-Native - based on KubeVirt)
+       FYI-[Libvirt + QEMU/KVM + VMs] -> COntainer (called as KubeVirt Container).
+    
+       VM-01 -> KubeVirt Container [ Libvirt + QEMU/KVM + VM ] 
+	   VM-02 -> KubeVirt Container [ Libvirt + QEMU/KVM + VM ] 
+	   VM-03 -> KubeVirt Container [ Libvirt + QEMU/KVM + VM ] 
+	   
+	   KubeVirt Container is a POD.
+	   
+
+- How an operator works internally:-
+  - Runs in a dedicated namespace:-
+    1-) Each operator usually runs in a specific namespace (Example - node truning operator namespace).
+    2-) This contains:-
+       - Operator deployment/pods
+       - ServiceAccount + RBAC (premission).
+       - Operator-specific CRDs.
+
+-------------------------------------------------------------------------
+Special Purpose Operator.
+5
+-# Node Tuning Operator (NTO) 
+    What it does ? Manage NODE-LEVEL Performance turning using ?
+	- tuned service + tuned daemon
+   
+-# Node fauture discovery (NFD):-
+   NFD profile each node and discover hardware and OS capabilities such as:-
+   - CPU architecture and features falgs.
+   - PIC device (GNU,NIC, accelerators).
+   - Kernel/OS characte
+  	 
+-# KMM - Kernel MOdule Management operator
+ - KMM manage the lifecycle of "out-of-tree" kernel modules.
+   
+  FYI- very useful when you need drivers or kernel modules not included by default.
+  
+  
+  #############
+  $ oc debug node/worker01
+  # cat /etc/rele<ATB>
+  # hostnamectl 
+  # chroot /host
+  # cat /etc/rele<ATB>
+  # hostnamectl 
+  # toolbox
+  Login to regisry (privide your credentials)
+  FYI- 
+   - It launches a Mutable RHEL container 
+   - Gives you access to debugging tools 
+   - Does NOT nodify the host OS (RHEL coreOS).
+  # dnf install anytool 
+  # dnf install tcpdump 
+  # tcpdump --version 
+  # ovs-vsctl show
+  #  ovs-vsctl --help | grep list 
+  #  ovs-vsctl list-inface 
+  
+  # tcpdump -i ens3 -w /tmp/node-worker01.pcap 
+  

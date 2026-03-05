@@ -1,0 +1,48 @@
+#Unit-4-# Pod Scheduling:-
+- Pod Scheduling Concepts 
+- Pod Scheduling Scenarios
+- Node Selectors and Taints
+- High Availability with Affinity Rules and Pod Disruption Budgets.
+
+#- Pod Scheduling Concepts:-
+Point-01-# What is POD Scheduling ? [w.r.t OpenSHift] 
+  - POD Scheduling - Process by which OpenSHift decides on which node a POD should run/placed.
+  Key Idea:-
+    - When you deploy application (via POD, Deployment, StatefulSet etc), you do NOT choose the node.
+	- OpenSHift "built-in" scheduler makes that decision.
+	
+  - Why scheduling is needed?
+    - Cluster have multiple nodes.
+	- Nodes differ in:-
+	  - CPU & Memory
+	  - Hardwre (GPU, Fast CPU, SSD, Standard CPU)
+	  - Network locality 
+	  - Availability zones 
+	- Scheduler ensures:-
+	  - Best performance 
+	  - High Availability
+	  - Efficient resource usages.
+	  
+apiVersion: apps/v1  
+kind: Deployment 
+metadata:
+  name: myapp 
+spec:
+  replicas: 3 
+  selector:
+    matchLables:
+       app: myapp 
+  template: 
+    
+---------------
+ Step-01:- Node filtering 
+   High CPU/Memory/Disk Pressure/port utilization
+   FYI- Disk Pressure (Space utilization).
+
+   Taint-Toeralation/Label-Selector
+
+ Step-02:- (NOde scoring)
+   It will provides some number [worker01 - 77/100 ; worker02 - 55/100 ; worker03 - 87/100]
+
+ Step-03:- Node selection (shorting)
+   Which node having highest number - will be  

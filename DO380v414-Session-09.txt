@@ -1,0 +1,73 @@
+
+OADP -> Storage (ODF/Non-ODF)
+ ODF= [Ceph-RBD/CephFS/RGW "Block/File/Object Storage"  + NooBaa-MCG "Object Storage"]
+ CSI - (RBD Client/CephFS client - CSI plugins)
+ 
+ NFS - File Storage (Block/File)
+ 20-30% (ODF) - 
+ 70% Non-ODF 
+ 
+ DO370V416 - [RHOCP + ODF]
+ CL260 - Ceph (Can be used for OpenStack/OpenShift).
+
+Unit-3-# Cluster Partitioning
+https://www.redhat.com/en/resources/self-managed-openshift-subscription-guide
+
+- Workload types (w.r.t Applications):-
+  1- AI/ML based workload/Applications  (20%)
+  2- MicroService workload/Applications (50%)
+  3- Lagecy workload/Applications       (30%)   
+  
+  Solution- Red Hat OpenShift:-
+  - OCP cluster [3 master & 100 worker nodes];
+  - 20 worker nodes - AI/ML  [ Required HIGH CPU/GPU level hardware ] 
+  - 50 worker nodes - MicroService [Standard hardware]
+  - 30 worker nodes - Lagecy applications. [Standard - Virtulization supported hardware - KubeVirt]
+
+Problem Statement:-
+1- What problem are node pools solving ?
+- Applications running on OpenShift "do not have same hardware needs":-
+  - Some apps are CPU-intensive 
+  - Some need GPU 
+  - Some are latency-sensitive 
+  - Some are lightweight database or Web apps.
+  
+  If all workloads run on same tyope of compute nodes the you will face issues like:-
+  - Higher cloud billing 
+  - Wasted resources
+  - Poor performance 
+  - Noisy neighbor issues 
+  
+2- openshift Node types:-
+   OCP cluster consist of:-
+   2.1- COntrol Plain nodes  
+      - COntrol Plain nodes are master node and manage cluster state.
+      - Manage CLuster state 
+	  - NO not run applications pods on this platform.
+      - control node also called master nodes [No end user application]
+	  
+   2.1 Compute nodes (Worker nodes):-
+      - Worker node run application workload called POD.
+	  - can be customized on hardware level.
+	 
+
+3- What is node pool ?
+   Logical grouping of compute nodes with similar hardware and configuration.
+   
+4- Why node pools matter:- 
+  - Hardware-specific workloads
+  - Cost Optimization 
+5- Noisy neighbor problems.
+
+Labels:-
+
+
+
+Machine configuration operator (MCO):-
+MachineConfig:-
+MachineConfigPool:- 
+
+- RHEL coreOS - Container optimized OS (No Manual Changes on RHEL CoreOS)
+- ALL changes via Machine configuration operator (MCO).
+- MachineConfig - Are the changes.
+- MachineConfigPool - Where the changes (MC) will be deployed [Default - master/worker]

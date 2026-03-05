@@ -1,0 +1,165 @@
+# MachineConfiguration Operator (MCO):-
+- MachineConfig  -> YAML file (Change)
+- MachineCOnfigPool -> Deployment part (Default - master/worker)
+
+Example:-
+MC - change (MOTD) deployed on master/worker nodes (master01-03 & worker01-03).
+
+POint-01-#
+- Machine Configuration Operator (MCO):-
+  Apply operating system-level configuration consistently across OpenShift cluster nodes.
+- What kind of configurations?
+  1- OS based 
+  2- Kernel arugments (changes).
+  3- ssh keys 
+  4- File under "/etc" . "/var" 
+  5- CRI-0 and kuberlet tuning.
+
+- Why MCO is required (And manual changes not allowed)?
+  OpenShift nodes runs RHCOS (RHEL coreOS - Red Hat Enterprise Linux CoreOS).
+  
+  Key points about RHCOS:-
+  1- RHCOS is Immutable OS.
+  2- Imaged-Based updates 
+  3- No Package-by-Package management 
+  4- Managed only by MCO.
+  
+  Why manual changes are dangerous:-
+  - systemctl, manual file edits, or SSH changes.
+    1- Case configuration drift 
+    2- Are overwritten by MCO
+    3- Put nodes into degraded state 
+
+  Example:-
+   Admin edits "/etc/containers/registries.conf manually.
+   - MCO detect mismatch 
+   - Node become Degraded 
+   - Cluster stop scheduling on the node.
+
+
+POint-02-# Core components of the Machine Configuration Operator (MCO):-
+ 1-) Machine-Config-Operator (MCO):-
+     - Main core (Like Brain of the system).
+	 - Coordinates all configuration logic.
+	 
+	 Example:- 
+	  - Admin define a new OS configuration.
+	  - Operator validate and triggers rollout.
+	  
+	  
+ 2-) Machine-Config-Controller (MCC):-
+    - Machines Configurations to node groups.
+	- Generates "rendered machine config"
+	- Orchestrates rolling update.
+	
+	  Example:- Worker nodes need Kernel tuning.
+	  - MCC prepares a new rendered config.
+	  - Applies node by node (Safe rolling update).
+	  
+ 3-) Machine-Config-Server (MCS):-
+     - Supplies Ignition data duing node bootstrap (Bootstrap process w.r.t OCP cluster using UPI method
+	   connected/disconnect/proxy env).
+	 - Used when node join the cluster.
+	   FYI-
+	   Bootstrap node initiated MCS for ignition deployment and then deploy same ignition to master/worker.
+
+     Example:-
+     New master/worker node added.
+     - At boot, it fetches OS config 
+	 - node joins cluster fully compliant.
+	 
+ 4-) MachineC-COnfig-Daemon (MCD):-
+     MCD runs on every nodes.
+	 
+	 Major responsibilities as:-
+	 - Applies OS configuration
+	 - Verifies configuration correctness
+	 - Detects drift (Any manual changes on RHCOS) - It will fix by reverting the drift.
+	 - Reboots node when required.
+  
+    Example:-
+	 Kernel parameters changes required for AI/ML or Database based.
+	 - MCD drains node [cordon -> Stop Scheduling then -> drains the node (Mean move all pods to other node).
+	 - applies change 
+	 - Reboot if required.
+	 - Marks node ready again (automatically).
+
+
+POint-03-# What MCO can manage?
+ - Supported resources like as below:-
+   1- systemd service 
+   2- SSH authorized key 
+   3- Kernel argument level changes    
+   4- files in "/etc" "/var"
+   - some /opt & /usr/local (via soft link).
+   
+  Example:-
+   Enable journald persistece 
+   -> MCO ensure correct file + permission 
+   -> applies uniformaly across all nodes.
+   
+
+Point-04-# MC & MCP 
+MachineConfig (MC) - What it represent ?
+- MachineConfig (MC) - "What should the OS looks like?"
+
+It defines:
+- OS-level customization 
+- node behavior at system level.
+
+MachineConfigPool (MCP) - Grouping nodes:-
+MachineConfigPool (MCP) "WHich nodes get which config"?
+
+- selects nodes using labels 
+- Applies one ore more MC
+- Tracks update state 
+
+Default (MCP):-
+master 
+worker 
+
+
+Point-05-# Relationship between nodes,MC,MCP  [How it works logically]
+1- NOde has lables (Eg: worker)
+2- MCP - Select nodes using labels.
+3- MC is applied via MCP
+4- MCO reders final config
+5- MCD enforce it.
+
+
+Point-06-#
+Order and Precidence of MachineConfigs 
+- MachineCOnfigs are applied "alphabetically by name).
+
+Rules:- Higher numbers MCs override lower once.
+
+Example:-
+00-worker-base
+99-worker-ssh ( ssh "99-worker-base overwite 00-worker-base ).
+
+
+Point-07-#
+Custom MachineCOnfig Pools (Advanced use):-
+Why?
+ - GPU nodes 
+ - HPC workload 
+ - Infra services
+ - Compliance-specific nodes
+ 
+ 
+- Infrastructure nodes (Infra Role).
+  Run cluster services seperately from applications:-
+   
+   - Routers
+   - Monitoring 
+   - Logging 
+   - images registry 
+   - ODF (Storage )
+   
+ *****
+ UPDATED  -> Desired config applied 
+ UPDATING -> Node rebooting/syncing 
+ DEGRADED -> Config drift or failure 
+ MachineCount -> Total nodes in pool 
+ READYMACHINECOUNT -> Node ready for scheduing 
+ 

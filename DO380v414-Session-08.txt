@@ -1,0 +1,68 @@
+#Backup and Restore with OADP:-
+
+1-# What OADP autually does:-
+ODAP (OpenShift API for Data Protection) provides:-
+- Kubernetes resource backup (Via Velero).
+- Persistent volume data backup using:-
+   1- CSI snapshot + Data mover (Kopia)
+   2- File System Backup (FSB) when snapshot are not supported.
+- Restore/Migration across namespace/cluster 
+- Scheduled backup + lifecycle management.
+
+FYI- All control resource live in "namesapce=openshift-adp"
+
+
+2-# Core Custom Restores (CRs):-
+2.1- Backup CR:-
+ - Triggers one backup attempt 
+ - Defines:-
+    - Which namespace ?
+	- Which resources ?
+	- Labels to select
+ - Back metadata + Logs are stored in Object storage 
+ Note: Only "Completed" backup are synchronized betweeen cluster & Object storage.
+
+2.2-# Restore CR:-
+ - Restores from an existing backup.
+ - Restoration can be done like:-
+   - Restore into same namesapce
+   - Restore into new namespace (Migration use case).
+
+2.3-# Schedule CR:-   
+ - Cron-Based recurring backup 
+ - Create backup CRs's automatically
+ - Acts like a Kubernetes Cronjobs 
+   FYI- Backup inherit schedule labels.
+   
+ 
+3-# Backup Flow (Stateful Application - CSI Snapshot + Data Mover).
+
+-1 Admin create Backup CR and deploy in namesapce="openshift-adp"
+-2 Velero exports kubernetes objects:-
+   - Deployment/statefulSet 
+   - Service 
+   - Route 
+   - ConfigMap 
+   - Secret 
+   - etc
+  FYI- Stored as metadata in Object Storage [ODF/Non-ODF - Object Storage - S3 API w.r.t OCF MCG/RGW]
+-3 CSI plugins create VOlumeSnapshot.
+  - snapshot taken at Storage layer 
+-4 OADP Data mover clones snapshot 
+   Snapshot + VOlumeSnapshotContents copied to "OpenShift-adp" 
+-5 Temporary PVC created 
+   - From the snapshot
+   - Used only fro data transfer 
+-6 Kopia transfer volume data.
+   - Deduplicated 
+   - Encypted 
+   - Compressed 
+   - Stored in Object Storage 
+
+-7 Cleanup 
+   - Temporary PVC 
+   - snapshot
+   - snapshotContents removed 
+
+Result:-
+  APP metadata + PV data safely stored - Backup completed.   

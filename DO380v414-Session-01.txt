@@ -1,0 +1,98 @@
+#- https://github.com/cprakash2118/DO380v414-02-Dec25
+
+###-Point-01-#
+Product - Red Hat OpenShift
+
+1-#Cloud services editions
+ - 'Red Hat OpenShift' Service on AWS      [Platfrom=AWS; POC=Amazon]
+ - Microsoft Azure 'Red Hat OpenShift'     [Platfrom=Azure; POC=MS]
+ - 'Red Hat OpenShift' Dedicated           [Platfrom=GCP/AWS ; POC=RH]
+ - 'Red Hat OpenShift' on IBM Cloud        [Platfrom=IBM ; POC=IBM]
+ 
+2-# Self-managed editions
+ - Red Hat OpenShift Kubernetes Engine     [basic=RHOKE]
+ - Red Hat OpenShift Container Platform    [Standard=RHOCP]
+ - Red Hat OpenShift Platform Plus         [Add-on=RHOPP]
+ - Red Hat OpenShift Virtualization Engine [Add-on=RHOV Based on KubeVirt]
+
+3-# Services & add-ons
+ - Red Hat OpenShift AI
+ - Red Hat OpenShift Lightspeed
+ - Red Hat OpenShift Virtualization
+ - Red Hat Quay
+ - Red Hat Advanced Cluster Management for Kubernetes
+ - Red Hat Advanced Cluster Security for Kubernetes
+ - Red Hat Advanced Developer Suite
+ - Red Hat OpenShift Consulting
+ 
+Note: Red Hat OpenShift anywhere.
+https://reprint.forrester.com/reports/the-forrester-wavetm-multicloud-container-platforms-q3-2025-f3367e46/index.html
+
+# CNI & CSI 
+
+
+Training Module - 
+https://www.redhat.com/en/resources/openshift-skill-paths-datasheet
+
+Administrator track - DO380v414 
+
+---------------------
+Point-02-#
+
+TOC w.r.t DO380v414:-
+Unit-1-# Authetication & Authorization (Oauth as Identity Broker).
+  - htpasswd [Mapping method]
+  - LDAP integration.
+  - LDAP group Sycn (Manual/Automatic)
+  - Client Certificate [Backdoor entry for cluster-admin- using kubeconfig file ]
+  - OpenIDConnect (OIDC - RHSSO)
+ 
+Unit-2-# BackUp, Restore, Migration of application via OADP [FYI- Application Back only]
+  - Backup/Restore - backend funcation.
+  - OADP - OpenSHift API for Data Protection.
+  - Backup-Restore with application (velero)
+
+Unit-3-# Cluster Partitioning:-
+  - MachineConfig (RHEL CoreOS) all changes via MCO.
+  - MCO;MCC;MCS;MCD;MC;MCP 
+  - Special Operator 
+
+Unit-4-# Pod Scheduling 
+  - Pod Scheduling concepts 
+  - Node Selector & Taint  [Label/Selector; taint/tolretation]
+  - Affinity/Anti-affinity with PDB 
+
+UNit-5-# OpenShift GitOps
+  - Red Hat OpenShift GitOps (Operator) -> argoCD
+    FYI- deal with argoCD instance (Customize this)
+  - Application (MC/Other cluster changes via argoCD).
+  
+
+Unit-6-# OpenShift Monitoring (CO)
+   - Prometheous 
+   - Node exportor 
+   - AlerManager 
+   
+Unit-7-# OpenShift Logging (Operator -Managed via OLM).
+  - Vector [CRDs- CLusterLoggin ; ClusterLogForwarder] & EventRoute 
+  
+
+
+---------------------
+Point-03-#
+Classroom Environment:-
+ 1-) Users Details:-
+     - Login to VMs/Server:-
+	   student/student [sudo access]
+	   root/redhat 
+	 
+	 - Login to OCP cluster.
+	   userName=admin
+	   password=redhatocp 
+	   API-URL=
+	   
+	   LDAP account(IDM)
+	   admin/redhatocp 
+	   developer/developer 
+	   
+	   kubeadmin/alkdjaslkjd

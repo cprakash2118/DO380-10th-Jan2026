@@ -1,0 +1,127 @@
+#Quick Recap:-
+Unit-1-# Authentication and Identity Management
+- IdP- htpasswd
+- IdP- LDAP integration.
+- LDAP Group Sync 
+- LDAP Group Sync with Cronjobs (automated way).
+- Client Certificate 
+- OpenIDConnect (OIDC).
+
+ExamPart- EX380v414
+-Q2-# LDAP integration
+-Q3-# Client Certificate
+
+###- OpenIDConnect (OIDC):-
+- OIDC authentication & Group Claims.  
+  Objective:-
+    Configure an OIDC as identity Provider (IdP) and automate group sync betweek openshift Oauth and \
+	an OIDC server.
+
+  - Use OIDC as IdP.
+    Instead of local OpenShift users, OIDC can be used as an external system for IdP.
+	OIDC- RedHat SSO, Keycloak, Azure AD, Google, GitHub etc.
+	
+	- Authentication and authorization based on [username + password => Token]
+	- Apply MFA (MultiFactor Authentication).
+	- Provides user identity and groups.
+	
+  - Automate group sync:-
+    - When the user logs in, OpenShift reads a "groups" claim from the OIDC token and:
+	  - Create those groups if they do not exist in OCP cluster.
+	  - Adds the user to those groups.
+	- Then you bind OpenShift RBAC to groups not to individual.
+	
+	Users:- user1-5/redhat 
+	Password:- redhat123
+	
+###- What is OpenID Connect (OIDC)?
+    - OIDC = An identity layer on top of Oauth 2.0 
+    - Prove who  the user is (Authentication)
+	- Give apps a token that conatiner claims about the user (name,email,groups etc).
+	
+Why OpenShift cares?
+    - OpenShift doesn't want to store passwords or implement every auth meachanism.
+	- It will integates with OIDC like:-
+	  - Google 
+	  - Azure AD 
+	  - RH SSO 
+	  
+	- OpenShift will IdP: "Who is this user".
+	- then IdP return a signed token with claims.
+	
+	- Features w.r.t OIDC:-
+	  SSO 
+	  Social Login 
+	  2FA / MFA 
+
+3. OIDC tokens (JWT)
+   JOSE/JWT:-
+   - OIDC use JOSE family of standard.
+   - Most Important - JWT - JSON Web Token 
+   
+   JWT has 3 major part.
+   1- Header:-
+      - Metadata about the token: What algo,type 
+	  {
+	    "alg": "RS256"
+		"typ": "JWT"
+	  }
+   2- Payload (It's claims):-
+      - JSON with user identity + extra attributes.
+	  - Example Payload from RH SSO:-
+	  
+	  {
+	   "iss": "https://sso.hawkstack.com/auth/realms/hawkstack",
+	   "sub": "lakjdlaksjdlkasjlkjlk-kjashdkjas-akjsdhkasjh",
+	   "preferred_username": "Chandra",
+       "email": "chandra@hawkstack.com",
+       "name": "Chandra Prakash"
+       "groups": ["ocp-admin", "unixadm"],
+       "iat": 179890829,
+       "exp": 182109383
+      }
+
+   3- Signature:-
+       - Cryptographic signature over "Header" + "Payload".
+       - OPenShift uses the IdP's public key to verify:-
+         1st one - Token not tampered 
+         2nd one - Token issued by trusted IdP.
+		 
+
+4. OIDC in openshift:-
+    OpenShift OAuth server acts as an identity broker.
+	
+	Identity broker:-
+	- A components that:
+	   - Redirect user to the right IdP.
+	   - Receives token from IdP.
+	   - Issue it's own token for OPenShift API.
+	 
+
+ Login flow:-
+ 1. User Opens (https://console-openshift-console.ocp4.example.com).
+ 2. OpenShift's built-in OAuth server shows a login page with providers.
+    FYI- htpasswd, LDAP, GitHub, RHSSO etc.
+ 3. User click "RHSSO".
+ 4. OAuth server redirect to:-
+    https://sso.ocp4.example.com/auth/realms/rhtraining/protocol/openid-connect/auth?...
+ 5. Use Logs in at SSO (AUth, MFA, 2FA etc)
+ 6. SSO sends user back to OpenShift OAuth callback URL:-
+     - https://oauth-openshift.apps.ocp4.example.com/oauth2callback/oidc_provider_name 
+	 - with an authoriazation code.
+	 
+ 7. OpenShift OAuth exchange the code for an OIDC ID token + access token
+ 8. It validates the token signature using IdP's public keys/CA cert.
+ 9. It extract claims (sub, email, groups etc) and:-
+    - Either finds or create a corrsposponding openshift user object.
+    - Create/Updates groups if group claims are configured.	
+ 10. Finally, OAUth server issues an openshift Oauth access token, which the console and oc CLI use.
+ 
+ 
+- OIDC claims:-
+  "OIDC" claims are key/values pairs that contain information about the user.
+  
+  - OPenShift reads claims from the JWT issued by the IdP.
+  - Its uses these claims to:-
+     - Identity the user.
+	 - Other attributes (Attach users to groups).
